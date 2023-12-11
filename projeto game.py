@@ -36,10 +36,13 @@ class Moeda(pygame.sprite.Sprite):
         self.rect[0] -= GAME_SPEED * 3
 
 
-
-
 def foradatela(sprite):
     return sprite.rect[0] < -(sprite.rect[2])
+    return sprite.rect[0] >1000
+
+
+
+
 
 class inimigo_terrestre(pygame.sprite.Sprite):
     def __init__(self,  xpos):
@@ -72,48 +75,38 @@ class inimigo_terrestre(pygame.sprite.Sprite):
                                  ]
 
       self.image = pygame.image.load("sprites/inimigo_terrestre1.png")
-      self.rect = pygame.Rect(900, 580, 100, 100)
+      self.rect_inimigo = pygame.Rect(900, 580, 100, 100)
       self.current_image = 0
+      self.rect = self.image.get_rect()
       self.rect[0] = xpos + 950
       self.rect[1] = 580
+
     def update(self, *args):
+        self.current_image = (self.current_image + 1) % 20
+        self.image = self.image_run_inimigo1[self.current_image]
+        self.image = pygame.transform.scale(self.image, (100, 100))
+        self.rect[0] -= GAME_SPEED * 2
+        self.rect_inimigo[0] = self.rect[0]
 
-       self.current_image = (self.current_image + 1) % 20
-       self.image = self.image_run_inimigo1[self.current_image]
-       self.image = pygame.transform.scale(self.image, (100, 100))
-       self.rect[0] -= GAME_SPEED * 2
-
-def inimigo_fora_tela(sprite):
-    return sprite.rect[0] < 0
 
 class slime_ball(pygame.sprite.Sprite):
- def __init__(self, xpos):
-  pygame.sprite.Sprite.__init__(self)
+    def __init__(self, xpos, inimigo_sprite):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("sprites/slime_ball.png")
+        self.image = pygame.transform.scale(self.image, (10, 10))
+        self.rect = pygame.Rect(10, 560, 10, 10)
+        self.rect[0] = inimigo_sprite[0]  # Use diretamente o valor x do retângulo
+        self.rect[1] = 600
 
-  self.image = pygame.image.load("sprites/slime_ball.png")
-  self.image = pygame.transform.scale(self.image, (10, 10))
-  self.rect = pygame.Rect(10, 560, 10, 10)
-  self.rect[0] = xpos + 950
-  self.rect[1] = 560
+    def get_rect(self):
+        return self.rect
 
- def update(self, *args):
-  self.image = pygame.transform.scale(self.image, (30, 30))
-  self.rect[0] -= GAME_SPEED * 2
+    def update(self, *args):
+        self.image = pygame.transform.scale(self.image, (30, 30))
+        self.rect[0] -= GAME_SPEED * 6
+
 def slime_fugiu(sprite):
-    return sprite.rect[0] < -(sprite.rect[2])
-
-
-
-
-
-
-
-
-
-
-
-
-
+ return sprite.rect[0] < -(sprite.rect[2])
 
 
 class Player(pygame.sprite.Sprite):
@@ -219,9 +212,10 @@ for i in range(1):
 
 slime_ballGroup = pygame.sprite.Group()
 for i in range(1):
-  slime_ball
-  tiro_slime = slime_ball(width * i)
-  slime_ballGroup.add(tiro_slime)
+  tiro_slime = slime_ball(width * i, inimigo_terrestreGroup.sprites()[0].rect_inimigo)
+  if not foradatela(inimigo_terrestreGroup.sprites()[0]):
+   slime_ballGroup.add(tiro_slime)
+   slime_ballGroup.add(tiro_slime)
 
 
 coinGroup = pygame.sprite.Group()
@@ -261,9 +255,12 @@ while gameloop == True:
             pygame.quit()
             exit()
 
+
+
  if slime_fugiu(slime_ballGroup.sprites()[0]):
      slime_ballGroup.remove(slime_ballGroup.sprites()[0])
-     nova_ball_slime = slime_ball(width - 20  )
+     nova_ball_slime = slime_ball(width - 20, inimigo_terrestreGroup.sprites()[0].rect_inimigo)
+
      slime_ballGroup.add(nova_ball_slime)
 
 
@@ -277,16 +274,24 @@ while gameloop == True:
  else:
     SPEED = 10
 
- if inimigo_fora_tela(inimigo_terrestreGroup.sprites()[0]):
+ if foradatela(inimigo_terrestreGroup.sprites()[0]):
      inimigo_terrestreGroup.remove(inimigo_terrestreGroup.sprites()[0])
-     newinimigoterrestre = inimigo_terrestre(width - 100 )
+     newinimigoterrestre = inimigo_terrestre(width - 20)
      inimigo_terrestreGroup.add(newinimigoterrestre)
 
- elif pygame.sprite.groupcollide(playerGroup, inimigo_terrestreGroup, False, False):
-  #playerGroup.remove(playerGroup.sprites()[0])
 
-  SPEED = 0
-  GAME_SPEED = 0
+ elif pygame.sprite.groupcollide(playerGroup, inimigo_terrestreGroup, False, False, pygame.sprite.collide_rect):
+
+     # Se colidiu com inimigo
+
+     SPEED = 0
+
+     GAME_SPEED = 0
+
+ if pygame.sprite.groupcollide(playerGroup, slime_ballGroup, False, False, pygame.sprite.collide_rect):
+     SPEED = 0
+     GAME_SPEED = 0
+
 
 
  if foradatela(coinGroup.sprites()[0]):
