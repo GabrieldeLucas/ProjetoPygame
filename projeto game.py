@@ -19,12 +19,6 @@ GAME_SPEED = 10
 
 
 
-
-
-
-
-
-
 class Moeda(pygame.sprite.Sprite):
     def __init__(self, xpos):
         pygame.sprite.Sprite.__init__(self)
@@ -70,7 +64,7 @@ class inimigo_voador(pygame.sprite.Sprite):
         self.image = self.image_run_inimigo_voador[self.current_image]
         self.image = pygame.transform.scale(self.image, (100, 100))
         self.rect[0] -= GAME_SPEED * 3
-        
+
 
 def dragao_fora(sprite):
     return sprite.rect[0] < -(sprite.rect[2])
@@ -218,6 +212,10 @@ pygame.init()
 #musica = pygame.mixer.music.load("musica.mp3")
 #pygame.mixer.music.play(-1)
 
+font_path = "sprites/Poppins-SemiBold.ttf"  # Substitua pelo caminho real do arquivo
+font_size = 36
+font = pygame.font.Font(font_path, font_size)
+
 game_window = pygame.display.set_mode((width,heigth))
 pygame.display.set_caption("joguinho legal dms")
 
@@ -289,6 +287,7 @@ clock = pygame.time.Clock()
 
 while gameloop == True:
  clock.tick(10)
+
  game_window.blit(BACKGROUND,(0,0))
  for event in pygame.event.get():
         if event.type == QUIT:
@@ -361,6 +360,10 @@ while gameloop == True:
      newMoeda = Moeda(width * i)
      coinGroup.add(newMoeda)
      contador += 1
+
+ texto_moedas = font.render("Moedas coletadas: {}".format(contador), True, (255, 255, 255))
+ texto_moedas_rect = texto_moedas.get_rect(topleft=(10, 10))
+ game_window.blit(texto_moedas, texto_moedas_rect)
 
  update()
  draw()
